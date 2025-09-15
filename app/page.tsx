@@ -1,6 +1,11 @@
+import { ModeToggle } from "@/components/common/mode-toggle";
+
 export default function Home() {
   return (
     <div className="space-y-2">
+      {/* 다크모드 토글 */}
+      <ModeToggle />
+
       <div className="py-2 text-2xl font-bold">Font Weight</div>
       <div className="text-2xl font-thin">
         <span>세상에 이런 폰트가 나오다니 천재인듯 100</span>

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import InitialProvider from "@/providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -22,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={cn("antialiased", pretendard.className)}>
-        {children}
+        <InitialProvider>{children}</InitialProvider>
       </body>
     </html>
   );
