@@ -1,10 +1,13 @@
 import { ModeToggle } from "@/components/common/mode-toggle";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
     <div className="space-y-2">
       {/* 다크모드 토글 */}
       <ModeToggle />
+
+      <Button>버튼</Button>
 
       <div className="py-2 text-2xl font-bold">Font Weight</div>
       <div className="text-2xl font-thin">
