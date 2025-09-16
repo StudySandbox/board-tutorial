@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState, useTransition } from "react";
 
 import {
   Card,
@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-import { signIn } from "@/lib/auth-client";
+import { signIn, useSession } from "@/lib/auth-client";
 
 const FormSchema = z.object({
   email: z
@@ -51,6 +51,9 @@ const MainComponent = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const { data: session, isPending: isSessionPending } = useSession();
+  const user = session?.user;
+
   const form = useForm<FormType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -58,6 +61,13 @@ const MainComponent = () => {
       password: "",
     },
   });
+
+  // 로그인 상태일 경우 대시보드 페이지로 이동
+  useEffect(() => {
+    if (!isSessionPending && !!user) {
+      router.replace("/dashboard");
+    }
+  }, [isSessionPending, user, router]);
 
   const onSubmit = (formData: FormType) => {
     startTransition(async () => {
@@ -68,9 +78,7 @@ const MainComponent = () => {
           callbackURL: "/dashboard",
         },
         {
-          onSuccess: () => {
-            toast.success("로그인 되었습니다.", { id: "success" });
-          },
+          onSuccess: () => {},
           onError: ({ error }) => {
             console.log(error);
             if (error.status === 401) {
