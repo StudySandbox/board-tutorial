@@ -9,8 +9,6 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -27,44 +25,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-import { signUp } from "@/lib/auth-client";
+import { signIn } from "@/lib/auth-client";
 
-const FormSchema = z
-  .object({
-    email: z
-      .email("이메일을 입력해주세요")
-      .trim()
-      .max(50, "50자 이상 입력할 수 없습니다"),
-    nickname: z
-      .string()
-      .trim()
-      .min(1, "닉네임을 입력해주세요")
-      .regex(/^[A-Za-z가-힣]+$/, "영문 또는 한글만 입력하세요.")
-      .min(2, "2자이상 입력해주세요")
-      .max(20, "20자이상 입력할 수 없습니다"),
-    password: z
-      .string()
-      .trim()
-      .min(1, "비밀번호를 입력하세요")
-      .min(8, "8자 이상 입력하세요")
-      .max(50, "50자 이상 입력할 수 없습니다"),
-    confirm: z
-      .string()
-      .trim()
-      .min(1, "비밀번호 확인을 입력하세요")
-      .min(8, "8자 이상 입력하세요")
-      .max(50, "50자 이상 입력할 수 없습니다"),
-  })
-  .refine((data) => data.password === data.confirm, {
-    error: "비밀번호와 일치하지 않습니다",
-    path: ["confirm"],
-  });
+const FormSchema = z.object({
+  email: z
+    .email("이메일을 입력해주세요")
+    .trim()
+    .max(50, "50자 이상 입력할 수 없습니다"),
+  password: z
+    .string()
+    .trim()
+    .min(1, "비밀번호를 입력하세요")
+    .min(8, "8자 이상 입력하세요")
+    .max(50, "50자 이상 입력할 수 없습니다"),
+});
 
-// 회원가입 폼 타입
+// 폼 타입
 type FormType = z.infer<typeof FormSchema>;
 
-// 메인 컴포넌트
 const MainComponent = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -74,32 +55,33 @@ const MainComponent = () => {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email: "",
-      nickname: "",
       password: "",
-      confirm: "",
     },
   });
 
   const onSubmit = (formData: FormType) => {
     startTransition(async () => {
-      await signUp.email(
+      await signIn.email(
         {
           email: formData.email,
-          name: formData.nickname,
           password: formData.password,
+          callbackURL: "/dashboard",
         },
         {
           onSuccess: () => {
-            toast.success("회원가입되었습니다.", { id: "success" });
-            router.push("/sign-in");
+            toast.success("로그인 되었습니다.", { id: "success" });
           },
           onError: ({ error }) => {
-            toast.error("회원가입에 실패했습니다.", { id: "error" });
-            if (error.status === 422) {
-              setError("이미 등록된 이메일입니다.");
+            console.log(error);
+            if (error.status === 401) {
+              toast.error("이메일 또는 비밀번호가 잘못 되었습니다.", {
+                id: "error",
+              });
+              setError("이메일 또는 비밀번호가 잘못 되었습니다.");
               return;
             }
 
+            toast.error(error.message, { id: "error" });
             setError(error.message);
           },
         },
@@ -146,53 +128,10 @@ const MainComponent = () => {
             <FormField
               control={form.control}
               disabled={isPending}
-              name="nickname"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>닉네임</FormLabel>
-                  <FormControl>
-                    <Input
-                      maxLength={20}
-                      type="text"
-                      placeholder="닉네임을 입력하세요"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              disabled={isPending}
               name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>비밀번호</FormLabel>
-                  <FormControl>
-                    <Input
-                      minLength={8}
-                      maxLength={50}
-                      type="password"
-                      placeholder="********"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              disabled={isPending}
-              name="confirm"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>비밀번호 확인</FormLabel>
                   <FormControl>
                     <Input
                       minLength={8}
@@ -215,7 +154,7 @@ const MainComponent = () => {
                 className="w-full cursor-pointer"
               >
                 {isPending && <Loader2Icon className="size-4 animate-spin" />}
-                회원가입
+                로그인
               </Button>
             </div>
           </form>
@@ -223,17 +162,15 @@ const MainComponent = () => {
       </CardContent>
 
       <CardFooter className="justify-end">
-        <p className="text-muted-foreground text-xs">
-          가입하신 이메일이 있으신가요?
-        </p>
+        <p className="text-muted-foreground text-xs">처음 방문하셨나요?</p>
 
         <Button
           disabled={isPending}
           className="cursor-pointer px-2 text-xs"
           variant="link"
-          onClick={() => router.push("/sign-in")}
+          onClick={() => router.push("/sign-up")}
         >
-          로그인
+          회원가입
         </Button>
       </CardFooter>
     </Card>
