@@ -1,3 +1,5 @@
+import { Toaster } from "sonner";
+
 import { QueryProvider } from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
 
@@ -15,6 +17,7 @@ const InitialProvider = ({ children }: Props) => {
         disableTransitionOnChange
       >
         {children}
+        <Toaster position="top-center" duration={1500} />
       </ThemeProvider>
     </QueryProvider>
   );
