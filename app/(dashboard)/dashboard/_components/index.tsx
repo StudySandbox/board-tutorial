@@ -1,28 +1,38 @@
 "use client";
 
-import { useEffect } from "react";
+import { useTransition } from "react";
+import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { signOut, useSession } from "@/lib/auth-client";
+import { signOut } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 
 const MainComponent = () => {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const { data: session, isPending } = useSession();
-  const user = session?.user;
-
-  // 로그인 상태 아닐경우 로그인 페이지로 이동
-  useEffect(() => {
-    if (!isPending && !user) {
-      router.replace("/sign-in");
-    }
-  }, [isPending, user, router]);
+  // 로그아웃
+  const onSignoutClick = async () => {
+    startTransition(async () => {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/sign-in");
+          },
+        },
+      });
+    });
+  };
 
   return (
     <>
       <div>Main Component</div>
-      <Button className="cursor-pointer" onClick={() => signOut()}>
+      <Button
+        disabled={isPending}
+        className="cursor-pointer"
+        onClick={onSignoutClick}
+      >
+        {isPending && <Loader2Icon className="size-4 animate-spin" />}
         로그아웃
       </Button>
     </>
