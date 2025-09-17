@@ -2,9 +2,11 @@ import MainComponent from "./_components";
 
 const DashboardPage = () => {
   return (
-    <>
-      <MainComponent />
-    </>
+    <div className="flex h-screen items-center justify-center">
+      <main>
+        <MainComponent />
+      </main>
+    </div>
   );
 };
 

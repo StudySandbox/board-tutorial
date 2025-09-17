@@ -2,14 +2,18 @@
 
 import { useTransition } from "react";
 import { Loader2Icon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 
-import { signOut } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+
+import { signOut, useSession } from "@/lib/auth-client";
 
 const MainComponent = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const { data: session, isPending: isSessionPending } = useSession();
+  const user = session?.user;
 
   // 로그아웃
   const onSignoutClick = async () => {
@@ -24,9 +28,23 @@ const MainComponent = () => {
     });
   };
 
+  if (isSessionPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isSessionPending && !user) {
+    notFound();
+  }
+
   return (
     <>
-      <div>Main Component</div>
+      <div>
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p className="text-sm text-neutral-300">
+          환영합니다, {user?.name || "User"}님
+        </p>
+      </div>
+
       <Button
         disabled={isPending}
         className="cursor-pointer"
