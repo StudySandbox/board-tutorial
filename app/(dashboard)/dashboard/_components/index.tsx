@@ -80,7 +80,8 @@ const MainComponent = () => {
             {posts.map((post) => (
               <li
                 key={post.id}
-                className="border-primary rounded-md border p-3"
+                className="border-primary hover:bg-secondary/40 cursor-pointer rounded-md border p-3"
+                onClick={() => router.push(`/post/${post.id}`)}
               >
                 <div className="flex items-center justify-between">
                   <div>
