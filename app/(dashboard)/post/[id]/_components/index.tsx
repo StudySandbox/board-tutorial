@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { notFound, useRouter } from "next/navigation";
 import { ChevronLeftIcon, Edit2Icon, Trash2Icon } from "lucide-react";
 
@@ -7,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { LoadingModal } from "@/components/common/modal/loading";
 
 import { useGetPost } from "../_hooks/queries/get-post";
-import { useState } from "react";
 import { DeleteConfirmModal } from "./modal/delete-confirm";
 
 interface Props {
@@ -20,7 +20,9 @@ const MainComponent = ({ postId }: Props) => {
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const onEditClick = () => {};
+  const onEditClick = () => {
+    router.push(`/post/${postId}/edit`);
+  };
   const onDeleteClick = () => {
     setIsDeleteOpen(true);
   };

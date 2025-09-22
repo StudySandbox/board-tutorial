@@ -18,6 +18,7 @@ export const useGetPost = ({ postId }: ParametersType) => {
     queryFn: () => fetchPost({ postId }),
     enabled: !!postId,
     staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
   return query;
