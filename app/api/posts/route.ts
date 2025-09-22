@@ -20,6 +20,9 @@ export async function GET(request: NextRequest) {
     // 페이지 네이션용으로 페이지 번호에 따른 제외할 게시글 개수
     const skip = (page - 1) * pageSize;
 
+    const session = await auth.api.getSession({ headers: request.headers });
+    const userId = session?.user.id || null;
+
     const [total, posts] = await Promise.all([
       prisma.post.count(),
       prisma.post.findMany({
@@ -31,11 +34,31 @@ export async function GET(request: NextRequest) {
           author: {
             select: { id: true, name: true, email: true },
           },
+          _count: {
+            select: {
+              comments: true,
+              likes: true,
+            },
+          },
+          ...(userId
+            ? {
+                likes: {
+                  where: { userId },
+                  select: { id: true },
+                },
+              }
+            : {}),
         },
       }),
     ]);
 
-    return NextResponse.json({ posts, page, pageSize, total });
+    const shaped = posts.map((post) => ({
+      ...post,
+      likedByMe: Array.isArray(post.likes) ? post.likes.length > 0 : false,
+      likes: undefined,
+    }));
+
+    return NextResponse.json({ posts: shaped, page, pageSize, total });
   } catch {
     return NextResponse.json(
       { error: "Failed to fetch posts" },

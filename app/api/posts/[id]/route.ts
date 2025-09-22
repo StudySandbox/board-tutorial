@@ -7,6 +7,8 @@ import prisma from "@/lib/prisma";
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(request: NextRequest, context: Params) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  const userId = session?.user.id;
   const { id } = await context.params;
 
   try {
@@ -20,6 +22,20 @@ export async function GET(request: NextRequest, context: Params) {
             email: true,
           },
         },
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+          },
+        },
+        ...(userId
+          ? {
+              likes: {
+                where: { userId },
+                select: { id: true },
+              },
+            }
+          : {}),
       },
     });
 
@@ -30,7 +46,16 @@ export async function GET(request: NextRequest, context: Params) {
       );
     }
 
-    return NextResponse.json({ post });
+    const shaped = {
+      ...post,
+      likedByMe: Array.isArray(post.likes) ? post.likes.length > 0 : false,
+    };
+
+    // likes는 사용하지 않는 변수
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { likes, ...rest } = shaped;
+
+    return NextResponse.json({ post: rest });
   } catch {
     return NextResponse.json(
       { error: "게시글을 불러오는데 실패했습니다.." },
