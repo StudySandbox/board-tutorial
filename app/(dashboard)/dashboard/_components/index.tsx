@@ -84,7 +84,7 @@ const MainComponent = () => {
                 onClick={() => router.push(`/post/${post.id}`)}
               >
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="w-full">
                     <>
                       <h3 className="line-clamp-1 font-semibold break-all">
                         {post.title}
