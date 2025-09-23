@@ -12,7 +12,7 @@ export async function GET(_request: NextRequest, context: ParametersType) {
   try {
     const { id } = await context.params;
     const comments = await prisma.comment.findMany({
-      where: { postId: id },
+      where: { postId: id, parentId: null },
       orderBy: { createdAt: "desc" },
       include: {
         author: {
@@ -20,6 +20,19 @@ export async function GET(_request: NextRequest, context: ParametersType) {
             id: true,
             name: true,
             email: true,
+          },
+        },
+
+        replies: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -34,6 +47,11 @@ export async function GET(_request: NextRequest, context: ParametersType) {
   }
 }
 
+type ContentType = {
+  content?: string;
+  parentId?: string;
+};
+
 // 댓글 등록
 export async function POST(request: Request, context: ParametersType) {
   try {
@@ -45,7 +63,7 @@ export async function POST(request: Request, context: ParametersType) {
     }
 
     const body = await request.json();
-    const { content } = body as { content?: string };
+    const { content, parentId } = body as ContentType;
 
     if (!content) {
       return NextResponse.json(
@@ -60,6 +78,7 @@ export async function POST(request: Request, context: ParametersType) {
         content,
         postId: id,
         authorId: userId,
+        parentId: parentId || null,
       },
       include: {
         author: {
