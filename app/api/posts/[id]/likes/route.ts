@@ -53,7 +53,7 @@ export async function DELETE(request: NextRequest, context: ParametersType) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.like.count({ where: { postId: id, userId } });
+    await prisma.like.deleteMany({ where: { postId: id, userId } });
     const count = await prisma.like.count({ where: { postId: id } });
     return NextResponse.json({ liked: false, count });
   } catch {
